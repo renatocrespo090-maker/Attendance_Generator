@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#4f46e5" />
+    <title>Zoom Attendance Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#top" aria-label="Zoom Attendance Generator home">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>
+            <strong>Zoom Monitoring</strong>
+            <small>Attendance Generator</small>
+          </span>
+        </a>
+        <div class="header-actions">
+          <button class="button button-quiet header-mini-toggle" id="themeToggleButton" type="button" aria-label="Toggle theme">
+            <span aria-hidden="true">☀</span> Light
+          </button>
+          <button class="button button-primary" id="openSettingsButton" type="button">
+            <span aria-hidden="true">⚙</span> Settings
+          </button>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="session-panel" aria-label="Current monitoring session">
+          <div class="service-picker">
+            <label for="serviceSelect">Monitoring service</label>
+            <select id="serviceSelect" aria-describedby="serviceHint"></select>
+            <div class="service-status-flags" aria-label="Monitoring status flags">
+              <label class="check-toggle">
+                <input id="liveCheckbox" type="checkbox" />
+                <span>Live</span>
+              </label>
+              <label class="check-toggle">
+                <input id="viewingCheckbox" type="checkbox" />
+                <span>Viewing</span>
+              </label>
+            </div>
+            <p id="serviceHint">This name appears at the top of your report.</p>
+          </div>
+          <div class="session-side">
+            <div class="timestamp-card">
+              <strong id="currentDate">Loading…</strong>
+              <div class="timestamp-time-control" aria-describedby="timeHelp">
+                <span>Monitoring time</span>
+                <div class="time-scroll-picker" aria-label="Monitoring time">
+                  <select id="monitoringHourInput" aria-label="Monitoring hour"></select>
+                  <span aria-hidden="true">:</span>
+                  <select id="monitoringMinuteInput" aria-label="Monitoring minute"></select>
+                  <select id="monitoringPeriodInput" aria-label="AM or PM"></select>
+                </div>
+              </div>
+            </div>
+            <div class="session-status" aria-live="polite">
+              <span id="attendanceSummary"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="meeting-card" aria-labelledby="meetingTitle">
+          <div class="meeting-card-title">
+            <p class="eyebrow">MEETING DETAILS</p>
+            <h2 id="meetingTitle">Zoom connection</h2>
+          </div>
+          <dl class="meeting-details">
+            <div>
+              <dt id="zoomFieldLabel">Zoom link</dt>
+              <dd><a id="zoomLink" href="#" target="_blank" rel="noopener">Join Zoom Meeting</a></dd>
+            </div>
+            <div>
+              <dt id="meetingIdFieldLabel">Meeting ID</dt>
+              <dd id="meetingId">—</dd>
+            </div>
+            <div>
+              <dt id="passcodeFieldLabel">Passcode</dt>
+              <dd id="passcode">—</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="attendance-intro" aria-labelledby="attendanceTitle">
+          <div>
+            <p class="eyebrow">LOCALE ATTENDANCE</p>
+            <h2 id="attendanceTitle">Set the status for every locale.</h2>
+          </div>
+          <p id="attendanceIntroSummary">0 of locales connected</p>
+        </section>
+
+        <section id="provinceGrid" class="province-grid" aria-live="polite"></section>
+
+        <section class="details-grid" aria-label="Additional monitoring details">
+          <article class="details-card">
+            <label for="connectedIndividualsInput">Connected individuals</label>
+            <textarea id="connectedIndividualsInput" rows="4" placeholder="Add the names of any connected individuals…"></textarea>
+          </article>
+          <article class="details-card">
+            <label for="remarksInput">Remarks</label>
+            <textarea id="remarksInput" rows="4" placeholder="Add observations, follow-ups, or other notes…"></textarea>
+          </article>
+        </section>
+
+        <section class="report-section" aria-labelledby="reportTitle">
+          <div class="report-heading">
+            <div>
+              <h2 id="reportTitle">Monitoring report</h2>
+            </div>
+            <div class="report-actions">
+              <button class="button button-primary" id="copyReportButton" type="button"><span aria-hidden="true">⧉</span> Copy report</button>
+            </div>
+          </div>
+          <pre id="reportOutput" tabindex="0"></pre>
+        </section>
+      </main>
+
+      <footer>
+        <span>Attendance data is saved only in this browser.</span>
+        <button class="text-button" id="resetAttendanceButton" type="button">Reset attendance</button>
+      </footer>
+    </div>
+
+    <div class="modal-backdrop" id="settingsModal" hidden>
+      <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="settings-header">
+          <div>
+            <p class="eyebrow">CUSTOMIZE YOUR MONITORING</p>
+            <h2 id="settingsTitle">Settings</h2>
+          </div>
+          <button class="icon-button" id="closeSettingsButton" type="button" aria-label="Close settings">×</button>
+        </div>
+
+        <form id="settingsForm" autocomplete="off" novalidate>
+          <section class="settings-section" data-settings-section="appearance">
+            <div class="section-title-row">
+              <div>
+                <h3>Appearance</h3>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label>Theme
+                <select name="theme">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-section" data-settings-section="reportLabels">
+            <div class="section-title-row">
+              <div>
+                <h3>Report labels</h3>
+                <p class="settings-help">Edit the wording used in the shared report.</p>
+              </div>
+              <button class="button button-small button-quiet section-edit-toggle" type="button" data-section="reportLabels">Edit</button>
+            </div>
+            <div class="form-grid">
+              <label>Monitoring heading<input name="monitoringHeading" required /></label>
+              <label>Zoom field label<input name="zoomFieldLabel" required /></label>
+              <label>Meeting ID label<input name="meetingIdLabel" required /></label>
+              <label>Passcode label<input name="passcodeLabel" required /></label>
+              <label>Province label<input name="provinceLabel" required /></label>
+              <label>Connected label<input name="connectedLabel" required /></label>
+              <label>Not connected label<input name="notConnectedLabel" required /></label>
+              <label>No-gathering label<input name="noGatheringLabel" required /></label>
+              <label>Individuals label<input name="individualsLabel" required /></label>
+              <label>Remarks label<input name="remarksLabel" required /></label>
+            </div>
+          </section>
+
+          <section class="settings-section" data-settings-section="zoomDetails">
+            <div class="section-title-row">
+              <div>
+                <h3>Zoom details</h3>
+              </div>
+              <button class="button button-small button-quiet section-edit-toggle" type="button" data-section="zoomDetails">Edit</button>
+            </div>
+            <div class="form-grid">
+              <label class="full-width">Zoom meeting link<input name="zoomLink" type="url" placeholder="https://…" /></label>
+              <label>Meeting ID<input name="meetingId" /></label>
+              <label>Passcode<input name="passcode" /></label>
+            </div>
+          </section>
+
+          <section class="settings-section" data-settings-section="serviceOptions">
+            <div class="section-title-row">
+              <div>
+                <h3>Service options</h3>
+                <p class="settings-help">The first option is used as the default.</p>
+              </div>
+              <div class="section-actions">
+                <button class="button button-small button-quiet section-edit-toggle" type="button" data-section="serviceOptions">Edit</button>
+                <button class="button button-small button-quiet" id="addServiceButton" type="button">+ Add service</button>
+              </div>
+            </div>
+            <div id="serviceSettingsList" class="editable-list"></div>
+          </section>
+
+          <section class="settings-section" data-settings-section="provincesLocales">
+            <div class="section-title-row">
+              <div>
+                <h3>Provinces &amp; locales</h3>
+                <p class="settings-help">Add, rename, or remove provinces and locales. Choose each locale’s default status for use after a reset.</p>
+              </div>
+              <div class="section-actions">
+                <button class="button button-small button-quiet section-edit-toggle" type="button" data-section="provincesLocales">Edit</button>
+                <button class="button button-small button-quiet" id="addProvinceButton" type="button">+ Add province</button>
+              </div>
+            </div>
+            <div id="provinceSettingsList" class="province-settings-list"></div>
+          </section>
+
+          <div class="settings-footer">
+            <button class="button button-danger" id="restoreDefaultsButton" type="button">Restore defaults</button>
+            <div>
+              <button class="button button-quiet" id="cancelSettingsButton" type="button">Cancel</button>
+              <button class="button button-primary" type="submit">Save settings</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script src="app.js"></script>
+  </body>
+</html>
